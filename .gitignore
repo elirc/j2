@@ -1,0 +1,7 @@
+out/
+.verification/
+__pycache__/
+*.class
+data/library.snapshot
+data/library.lock
+data/.library-save-*.tmp

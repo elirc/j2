@@ -1,0 +1,8 @@
+src/librarytracker/App.java
+src/librarytracker/model/Book.java
+src/librarytracker/model/Borrower.java
+src/librarytracker/model/Loan.java
+src/librarytracker/model/Values.java
+src/librarytracker/service/LibraryManager.java
+src/librarytracker/storage/FileStorage.java
+src/librarytracker/storage/LibraryData.java
