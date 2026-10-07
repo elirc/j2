@@ -14,20 +14,30 @@ Finally read [App](../src/librarytracker/App.java). It handles prompts, menu cho
 
 ## The CLI menu
 
-The only place the numbering was recorded before was the stdin strings in `scripts/verify.py`. From `src/librarytracker/App.java` (the `switch` on the menu choice):
+From the `switch` in `src/librarytracker/App.java` (line numbers are the `case` lines). Each row lists the prompts in the order the CLI reads them, which is exactly what you type when you script stdin in [05-PRACTICE](05-PRACTICE.md).
 
-| key | action |
-|---|---|
-| 1 | Book b = |
-| 2 | listBooks(manager.getAllBooks()); |
-| 3 | Borrower b = |
-| 4 | if (manager.getAllBorrowers().isEmpty()) System.out.println( |
-| 5 | Book b = selectedBook(); |
-| 6 | Book b = selectedBook(); |
-| 7 | listBooks(manager.getCheckedOutBooks()); |
-| 8 | System.out.println( |
+| key | action | prompts, in order | service call |
+|---|---|---|---|
+| 1 (`:52`) | add book | Title, Author, ISBN (optional) | `addBook` |
+| 2 (`:57`) | list all books (archived included) | none | `getAllBooks` |
+| 3 (`:58`) | register borrower | Name, Email (optional), Phone (optional) | `registerBorrower` |
+| 4 (`:64`) | list borrowers | none | `getAllBorrowers` |
+| 5 (`:68`) | check out | Book ID, Borrower ID, Due date (optional) | `checkOutBook` |
+| 6 (`:80`) | return | Book ID | `returnBook` |
+| 7 (`:85`) | books currently checked out | none | `getCheckedOutBooks` |
+| 8 (`:86`) | print saved revision (nothing to save) | none | `revision` |
+| 9 | exit (handled before the switch, `:49`) | none | none |
+| 10 (`:91`) | edit book | Book ID, New title, New author, New ISBN | `editBook` |
+| 11 (`:102`) | delete unused book | Book ID, type `DELETE` | `deleteBook` |
+| 12 (`:109`) | edit borrower | Borrower ID, New name, New email, New phone | `editBorrower` |
+| 13 (`:120`) | delete unused borrower | Borrower ID, type `DELETE` | `deleteBorrower` |
+| 14 (`:127`) | search | query, status (`all`/`available`/`out`/`archived`) | `searchBooks` |
+| 15 (`:132`) | reload from disk | none | `reload` |
+| 16 (`:137`) | loan history, newest first | none | `getLoanHistory` |
+| 17 (`:158`) | archive/restore book | Book ID, type `YES` | `setBookActive` |
+| 18 (`:166`) | archive/restore borrower | Borrower ID, type `YES` | `setBorrowerActive` |
 
-`07-TRACE-LAB.md` asks you to drive the app by hand; use this table.
+Every handler's exception lands in one catch at `App.java:176-180`, which prints `Change not accepted: <message>`, including for read-only commands such as search. The version a mutation sends is captured by `selectedBook()`/`selectedBorrower()` before the replacement fields are prompted, so the edit is checked against what the user saw. `07-TRACE-LAB.md` asks you to drive the app by hand; use this table.
 
 ## Use tests as an index
 

@@ -6,9 +6,11 @@ A checkout is not just `book.checkedOut = true`. It must refer to an existing ac
 
 In a SQL design, foreign keys could establish that the referenced book and borrower exist, while a unique constraint or partial index could limit active loans per copy. Some business rules would still belong in the service. The file implementation keeps those checks visible so you can identify which guarantees a database can enforce and which require policy.
 
-## Two id bases, on purpose
+## One id base, zero, for all three records
 
-Book and borrower ids may be 0 (`Values.identity(id, version)` in `Book.java`/`Borrower.java` checks the version, not the id), while loan ids must be at least 1 (`Loan.java`: `Values.identity(id, 1)`). The difference is a boundary worth a test: a loan is created by the system and 0 is reserved as "no loan yet", whereas books and borrowers are imported with whatever ids the source had. Write the test that constructs `new Loan(0, ...)` and expects the validation error, next to one that accepts `new Book(0, ...)`; put both in the model test class.
+`Values.identity(id, version)` (`Values.java:32-35`) rejects `id < 0`, `id == Long.MAX_VALUE`, and `version < 1`. Books and borrowers pass their real version. `Loan` has no version, so its compact constructor calls `Values.identity(id, 1)` (`Loan.java:15-17`) with a dummy version of 1 just to reuse the id rule for `id`, `bookId`, and `borrowerId`. Zero is therefore a valid id for every record type: `LibraryData.empty()` starts all three watermarks at 0, legacy import numbers its synthesized loans from `loans.size()` (`FileStorage.java:365-366`), and the first checkout in a new workspace prints `Loan 0.` (the suite's "loan ids advance across return and restart" test expects the *second* loan to be id 1).
+
+The `1` in `identity(id, 1)` is easy to misread as "loan ids start at 1". When a helper is reused with a placeholder argument, a named overload such as `Values.id(long)` would make the intent explicit. The zero base matters again in [08](08-TRANSLATION.md): SQL identity columns usually start at 1, so an importer must map ids rather than assume they line up.
 
 ## Current values and historical snapshots answer different questions
 
@@ -34,5 +36,5 @@ The implementation bounds files to 10 MiB and each collection to 10,000 records.
 
 ## Glossary
 
-*Consistency boundary*: the set of records one action must change together (book, loan, borrower). *Snapshot*: the whole state written as one file, replaced atomically. *Baseline*: the bytes the app last read; compared before overwriting. *Stale edit*: a write based on a baseline that storage has moved past. *Receipt*: the copy of facts (title, name, due date) frozen into the loan when it was created. *Archival*: hiding a record without deleting the history that references it. *Row version / concurrency token*: the C# equivalent of the baseline compare (see 08).
+*Consistency boundary*: the set of records one action must keep consistent. Checkout and return write the book and its loan; the borrower is read and must be active, but is not rewritten. *Snapshot*: the whole state written as one file, replaced atomically. *Baseline*: the bytes the app last read; compared before overwriting. *Stale edit*: a write based on a baseline that storage has moved past. *Receipt*: the copy of facts (title, name, due date) frozen into the loan when it was created. *Archival*: hiding a record without deleting the history that references it. *Row version / concurrency token*: the EF Core equivalent of the per-record `version` check (see 08).
 

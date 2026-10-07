@@ -2,6 +2,8 @@
 
 The completed functional verification passed **53 checks**: 44 Java model, aggregate, service, and repository tests plus nine real CLI/process checks. Compilation used JDK 17 with UTF-8 and `--release 17`; Python 3 orchestrated disposable fixtures. The nine Java source/test files were then formatted consistently, and a separate compilation of the formatted files passed. Formatting used a SHA-256-verified Google Java Format 1.28.0 artifact; it did not add a runtime dependency to the project.
 
+> **Re-check 2026-10-06 (documentation pass).** The Java suite was recompiled from the committed sources with JDK 17.0.10 into a temporary folder and printed `RESULT {"passed":true,"tests":44}`; `LibraryWorkflowTest.java` has 44 `test(...)` calls, and `scripts/verify.py` defines eight `cli(...)` scenarios plus the two-JVM race (nine process checks). `verify.py` itself was not rerun in that pass. The paragraphs below describe the original delivery run.
+
 ## What the Java suite established
 
 Model checks cover required bounded text, control characters, normalized optional contact fields, immutable versioned edits, checkout-state consistency, date bounds, overdue comparison, return behavior, archived records, and version exhaustion. Aggregate checks cover unique identities, allocation watermarks, unique normalized nonempty emails, valid references, and one consistent active loan per book copy.

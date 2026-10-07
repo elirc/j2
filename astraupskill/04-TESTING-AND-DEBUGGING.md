@@ -2,6 +2,21 @@
 
 Run [the verification helper](../scripts/verify.py) using Python 3 and JDK 17. It compiles into a temporary directory, executes Java checks, drives the actual CLI, and starts two JVMs for a stale-file race. Evidence goes to `.verification` or `LIBRARY_VERIFY_RESULTS_DIR`. The helper never uses your normal library directory.
 
+To run only the 44 Java tests without Python, compile into a throwaway folder outside the repo and pass the test class a scratch root (from Git Bash):
+
+```bash
+OUT=$(mktemp -d)
+javac -encoding UTF-8 --release 17 -d "$OUT/classes" $(git ls-files '*.java')
+java -cp "$OUT/classes" librarytracker.LibraryWorkflowTest "$OUT/unit"
+# ... 44 PASS lines, then: RESULT {"passed":true,"tests":44}
+```
+
+The harness in `LibraryWorkflowTest.java:38` throws on the first failing test, so a broken run shows the stack trace of the *first* failure only and the remaining tests never execute. Remember that when you count what a mutation "breaks".
+
+## Break it on purpose: assign before saving
+
+`LibraryManager.commit` (`LibraryManager.java:41-45`) builds the candidate, calls `storage.save(candidate)`, and only then assigns `data = candidate`. Swap those two lines in a scratch copy and rerun the suite. Observed result (re-run 2026-10-06): 38 tests pass, then the run stops at **"separate sessions reject stale files then recover by reload"** (`LibraryWorkflowTest.java:472`), because the rejected session `b` now shows the book it failed to save. With that test deleted from the copy, the next one to fail is **"failed atomic checkout retains book state and no loan receipt"**. Two independent tests catch the bug, and neither one has to know the order of lines inside `commit`: they assert the observable state after a failed save.
+
 ## One test that asserts both sides
 
 From `test/librarytracker/LibraryWorkflowTest.java:154`. The point is the first clause: the *old* value is still checked out after `returnBook()` returned a new one, so an accidental in-place mutation cannot pass.

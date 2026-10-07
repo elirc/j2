@@ -6,7 +6,7 @@ Follow [the root setup guide](../README.md) and run against a new fictional dire
 
 ## What makes this project different from J1 and j3
 
-J1 has one record type and j3 has accounts with a transfer pair. This project has three records that one action touches together: checking out a book changes the book's availability, creates a loan, and changes the borrower's count, and returning reverses all three. Every lesson here (snapshots, stale-edit protection, deletion versus archival) is about keeping those three consistent when one write fails. Read chapter 02's first section with that action in mind.
+J1 has one record type and j3 has accounts with a transfer pair. This project has three related record types, and one action must keep them consistent: checking out a book replaces the book with a checked-out version and appends a loan receipt, after checking that the borrower exists and is active (the borrower record itself is not rewritten; there is no per-borrower loan count). Returning replaces the book again and stamps the receipt's return date. Every lesson here (snapshots, stale-edit protection, deletion versus archival) is about keeping book, loan, and borrower references consistent when a write fails. Read chapter 02's first section with that action in mind.
 
 ## Suggested study sessions
 
@@ -14,7 +14,8 @@ J1 has one record type and j3 has accounts with a transfer pair. This project ha
 2. Read [the concepts guide](02-CONCEPTS.md). Explain why independently saving books and borrowers can produce an inconsistent workspace, even when both individual files contain valid text.
 3. Complete [the worked checkout change](03-WORKED-CHANGE.md). Trace the candidate book and receipt into one accepted snapshot, including the failed-save case.
 4. Run [the testing and debugging lab](04-TESTING-AND-DEBUGGING.md). Use disposable fixtures for malformed legacy files, stale sessions, and injected atomic-move failure.
-5. Attempt [the practice tasks](05-PRACTICE.md), compare with [solution guidance](06-SOLUTIONS-AND-REVIEW.md), and deliver [the trace lab](07-TRACE-LAB.md) explanation.
+5. Attempt [the practice tasks](05-PRACTICE.md) (each has a `node --test` check that drives the real CLI), compare with [solution guidance and review findings](06-SOLUTIONS-AND-REVIEW.md), and deliver [the trace lab](07-TRACE-LAB.md) explanation.
+6. Optional: read [the C#/EF Core translation](08-TRANSLATION.md) if your next codebase is .NET.
 
 ## What you should learn to articulate
 
